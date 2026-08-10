@@ -69,7 +69,6 @@ export default function Question3() {
           textAlign: "center",
         }}
       >
-        {/* Question number */}
         <p
           style={{
             margin: "0 0 18px",
@@ -82,7 +81,6 @@ export default function Question3() {
           Question 03
         </p>
 
-        {/* Question */}
         <h1
           style={{
             margin: "0 auto 40px",
@@ -104,7 +102,6 @@ export default function Question3() {
           </span>
         </h1>
 
-        {/* Buttons */}
         <div
           style={{
             display: "flex",
@@ -116,7 +113,6 @@ export default function Question3() {
         >
           {!swapped ? (
             <>
-              {/* YES */}
               <button
                 onClick={handleYes}
                 style={buttonStyle}
@@ -137,31 +133,42 @@ export default function Question3() {
                 Yes
               </button>
 
-              {/* NO */}
               <button
-                onMouseEnter={swapButtons}
-                onPointerEnter={swapButtons}
-                onTouchStart={swapButtons}
-                onClick={swapButtons}
                 style={buttonStyle}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") {
+                    swapButtons();
+                  }
+                }}
+                onPointerDown={(event) => {
+                  if (event.pointerType === "touch") {
+                    event.preventDefault();
+                    swapButtons();
+                  }
+                }}
               >
                 No
               </button>
             </>
           ) : (
             <>
-              {/* NO */}
               <button
-                onMouseEnter={swapButtons}
-                onPointerEnter={swapButtons}
-                onTouchStart={swapButtons}
-                onClick={swapButtons}
                 style={buttonStyle}
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") {
+                    swapButtons();
+                  }
+                }}
+                onPointerDown={(event) => {
+                  if (event.pointerType === "touch") {
+                    event.preventDefault();
+                    swapButtons();
+                  }
+                }}
               >
                 No
               </button>
 
-              {/* YES */}
               <button
                 onClick={handleYes}
                 style={buttonStyle}
@@ -200,6 +207,7 @@ const buttonStyle: React.CSSProperties = {
   fontWeight: 500,
   letterSpacing: "0.5px",
   cursor: "pointer",
+  touchAction: "manipulation",
   transition:
     "background 0.25s ease, color 0.25s ease, transform 0.25s ease",
 };
