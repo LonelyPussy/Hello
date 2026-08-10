@@ -1,16 +1,48 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Question3() {
   const navigate = useNavigate();
+
   const [swapped, setSwapped] = useState(false);
+
+  const ignoreNextClick = useRef(false);
 
   const swapButtons = () => {
     setSwapped((previous) => !previous);
+
+    // Prevent the click generated after a touch/pointer
+    // from accidentally activating the newly positioned Yes button.
+    ignoreNextClick.current = true;
+
+    window.setTimeout(() => {
+      ignoreNextClick.current = false;
+    }, 100);
   };
 
   const handleYes = () => {
+    if (ignoreNextClick.current) {
+      return;
+    }
+
     navigate("/question4");
+  };
+
+  const handleNoPointerDown = (
+    event: React.PointerEvent<HTMLButtonElement>
+  ) => {
+    if (event.pointerType === "touch") {
+      event.preventDefault();
+      swapButtons();
+    }
+  };
+
+  const handleNoPointerEnter = (
+    event: React.PointerEvent<HTMLButtonElement>
+  ) => {
+    if (event.pointerType === "mouse") {
+      swapButtons();
+    }
   };
 
   return (
@@ -20,8 +52,8 @@ export default function Question3() {
         inset: 0,
         width: "100vw",
         height: "100vh",
-        background: "#f7f5f2",
-        color: "#111",
+        background: "#f6f5f2",
+        color: "#151515",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -29,11 +61,11 @@ export default function Question3() {
           "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         overflow: "hidden",
         userSelect: "none",
-        padding: "24px",
+        padding: 24,
         boxSizing: "border-box",
       }}
     >
-      {/* Decorative circle — top right */}
+      {/* Decorative circle */}
       <div
         style={{
           position: "absolute",
@@ -47,7 +79,7 @@ export default function Question3() {
         }}
       />
 
-      {/* Decorative circle — bottom left */}
+      {/* Decorative circle */}
       <div
         style={{
           position: "absolute",
@@ -69,6 +101,7 @@ export default function Question3() {
           textAlign: "center",
         }}
       >
+        {/* Question number */}
         <p
           style={{
             margin: "0 0 18px",
@@ -81,6 +114,7 @@ export default function Question3() {
           Question 03
         </p>
 
+        {/* Question */}
         <h1
           style={{
             margin: "0 auto 40px",
@@ -102,6 +136,7 @@ export default function Question3() {
           </span>
         </h1>
 
+        {/* Buttons */}
         <div
           style={{
             display: "flex",
@@ -113,78 +148,42 @@ export default function Question3() {
         >
           {!swapped ? (
             <>
+              {/* YES */}
               <button
+                type="button"
                 onClick={handleYes}
                 style={buttonStyle}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#111";
-                  e.currentTarget.style.color = "#fff";
-                  e.currentTarget.style.transform =
-                    "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background =
-                    "transparent";
-                  e.currentTarget.style.color = "#111";
-                  e.currentTarget.style.transform =
-                    "translateY(0)";
-                }}
               >
                 Yes
               </button>
 
+              {/* NO */}
               <button
+                type="button"
+                onPointerEnter={handleNoPointerEnter}
+                onPointerDown={handleNoPointerDown}
                 style={buttonStyle}
-                onPointerEnter={(event) => {
-                  if (event.pointerType === "mouse") {
-                    swapButtons();
-                  }
-                }}
-                onPointerDown={(event) => {
-                  if (event.pointerType === "touch") {
-                    event.preventDefault();
-                    swapButtons();
-                  }
-                }}
               >
                 No
               </button>
             </>
           ) : (
             <>
+              {/* NO */}
               <button
+                type="button"
+                onPointerEnter={handleNoPointerEnter}
+                onPointerDown={handleNoPointerDown}
                 style={buttonStyle}
-                onPointerEnter={(event) => {
-                  if (event.pointerType === "mouse") {
-                    swapButtons();
-                  }
-                }}
-                onPointerDown={(event) => {
-                  if (event.pointerType === "touch") {
-                    event.preventDefault();
-                    swapButtons();
-                  }
-                }}
               >
                 No
               </button>
 
+              {/* YES */}
               <button
+                type="button"
                 onClick={handleYes}
                 style={buttonStyle}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#111";
-                  e.currentTarget.style.color = "#fff";
-                  e.currentTarget.style.transform =
-                    "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background =
-                    "transparent";
-                  e.currentTarget.style.color = "#111";
-                  e.currentTarget.style.transform =
-                    "translateY(0)";
-                }}
               >
                 Yes
               </button>
@@ -208,6 +207,4 @@ const buttonStyle: React.CSSProperties = {
   letterSpacing: "0.5px",
   cursor: "pointer",
   touchAction: "manipulation",
-  transition:
-    "background 0.25s ease, color 0.25s ease, transform 0.25s ease",
 };
