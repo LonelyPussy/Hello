@@ -8,20 +8,43 @@ const MIN_ZOOM = 1;
 const MAX_ZOOM = 5;
 const ZOOM_STEP = 0.2;
 
+type Point = {
+  x: number;
+  y: number;
+};
+
 export default function Sky() {
   const containerRef =
     useRef<HTMLDivElement | null>(null);
 
   const [zoom, setZoom] = useState(1);
 
-  const [position, setPosition] = useState({
+  const [position, setPosition] = useState<Point>({
     x: 0,
     y: 0,
   });
 
+  // Keep track of active fingers/pointers
+  const pointers = useRef(
+    new Map<number, Point>()
+  );
+
   const dragging = useRef(false);
 
-  const lastPointer = useRef({
+  const lastPointer = useRef<Point>({
+    x: 0,
+    y: 0,
+  });
+
+  // Pinch state
+  const pinchStartDistance = useRef(0);
+  const pinchStartZoom = useRef(1);
+  const pinchStartPosition = useRef<Point>({
+    x: 0,
+    y: 0,
+  });
+
+  const pinchStartMidpoint = useRef<Point>({
     x: 0,
     y: 0,
   });
@@ -30,30 +53,42 @@ export default function Sky() {
     x: number,
     y: number,
     scale: number
-  ) => {
-    const container = containerRef.current;
+  ): Point => {
+    const container =
+      containerRef.current;
 
     if (!container) {
-      return { x: 0, y: 0 };
+      return {
+        x: 0,
+        y: 0,
+      };
     }
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width =
+      container.clientWidth;
+
+    const height =
+      container.clientHeight;
 
     const imageRatio = 16 / 9;
 
     const containerRatio =
-      width / Math.max(height, 1);
+      width /
+      Math.max(height, 1);
 
     let imageWidth: number;
     let imageHeight: number;
 
-    if (containerRatio > imageRatio) {
+    if (
+      containerRatio > imageRatio
+    ) {
       imageHeight = height;
-      imageWidth = height * imageRatio;
+      imageWidth =
+        height * imageRatio;
     } else {
       imageWidth = width;
-      imageHeight = width / imageRatio;
+      imageHeight =
+        width / imageRatio;
     }
 
     imageWidth *= scale;
@@ -74,10 +109,31 @@ export default function Sky() {
         -maxX,
         Math.min(maxX, x)
       ),
+
       y: Math.max(
         -maxY,
         Math.min(maxY, y)
       ),
+    };
+  };
+
+  const getDistance = (
+    a: Point,
+    b: Point
+  ) => {
+    return Math.sqrt(
+      Math.pow(b.x - a.x, 2) +
+        Math.pow(b.y - a.y, 2)
+    );
+  };
+
+  const getMidpoint = (
+    a: Point,
+    b: Point
+  ): Point => {
+    return {
+      x: (a.x + b.x) / 2,
+      y: (a.y + b.y) / 2,
     };
   };
 
@@ -88,7 +144,10 @@ export default function Sky() {
   ) => {
     const newZoom = Math.max(
       MIN_ZOOM,
-      Math.min(MAX_ZOOM, nextZoom)
+      Math.min(
+        MAX_ZOOM,
+        nextZoom
+      )
     );
 
     setPosition((current) => {
@@ -121,8 +180,14 @@ export default function Sky() {
           newZoom / zoom;
 
         return clampPosition(
-          x - (x - current.x) * ratio,
-          y - (y - current.y) * ratio,
+          x -
+            (x - current.x) *
+              ratio,
+
+          y -
+            (y - current.y) *
+              ratio,
+
           newZoom
         );
       }
@@ -143,10 +208,15 @@ export default function Sky() {
     event.preventDefault();
 
     const direction =
-      event.deltaY > 0 ? -1 : 1;
+      event.deltaY > 0
+        ? -1
+        : 1;
 
     changeZoom(
-      zoom + direction * ZOOM_STEP,
+      zoom +
+        direction *
+          ZOOM_STEP,
+
       event.clientX,
       event.clientY
     );
@@ -155,26 +225,211 @@ export default function Sky() {
   const handlePointerDown = (
     event: PointerEvent
   ) => {
-    if (zoom <= 1) {
+    // Don't interfere with buttons
+    const target =
+      event.target as HTMLElement;
+
+    if (
+      target.closest("button")
+    ) {
       return;
     }
 
-    dragging.current = true;
-
-    lastPointer.current = {
-      x: event.clientX,
-      y: event.clientY,
-    };
+    pointers.current.set(
+      event.pointerId,
+      {
+        x: event.clientX,
+        y: event.clientY,
+      }
+    );
 
     containerRef.current?.setPointerCapture(
       event.pointerId
     );
+
+    // Two fingers = start pinch
+    if (
+      pointers.current.size === 2
+    ) {
+      const [
+        first,
+        second,
+      ] = Array.from(
+        pointers.current.values()
+      );
+
+      pinchStartDistance.current =
+        getDistance(
+          first,
+          second
+        );
+
+      pinchStartZoom.current =
+        zoom;
+
+      pinchStartPosition.current = {
+        ...position,
+      };
+
+      const midpoint =
+        getMidpoint(
+          first,
+          second
+        );
+
+      pinchStartMidpoint.current =
+        midpoint;
+
+      dragging.current = false;
+
+      return;
+    }
+
+    // One finger = pan
+    if (zoom > 1) {
+      dragging.current = true;
+
+      lastPointer.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+    }
   };
 
   const handlePointerMove = (
     event: PointerEvent
   ) => {
-    if (!dragging.current) {
+    if (
+      !pointers.current.has(
+        event.pointerId
+      )
+    ) {
+      return;
+    }
+
+    pointers.current.set(
+      event.pointerId,
+      {
+        x: event.clientX,
+        y: event.clientY,
+      }
+    );
+
+    // --------------------------------
+    // PINCH ZOOM
+    // --------------------------------
+    if (
+      pointers.current.size === 2
+    ) {
+      const [
+        first,
+        second,
+      ] = Array.from(
+        pointers.current.values()
+      );
+
+      const currentDistance =
+        getDistance(
+          first,
+          second
+        );
+
+      if (
+        pinchStartDistance.current ===
+        0
+      ) {
+        return;
+      }
+
+      const scale =
+        currentDistance /
+        pinchStartDistance.current;
+
+      const newZoom = Math.max(
+        MIN_ZOOM,
+        Math.min(
+          MAX_ZOOM,
+          pinchStartZoom.current *
+            scale
+        )
+      );
+
+      const container =
+        containerRef.current;
+
+      if (!container) {
+        return;
+      }
+
+      const rect =
+        container.getBoundingClientRect();
+
+      // Current midpoint between fingers
+      const currentMidpoint =
+        getMidpoint(
+          first,
+          second
+        );
+
+      const centerX =
+        currentMidpoint.x -
+        rect.left -
+        rect.width / 2;
+
+      const centerY =
+        currentMidpoint.y -
+        rect.top -
+        rect.height / 2;
+
+      const startCenterX =
+        pinchStartMidpoint.current.x -
+        rect.left -
+        rect.width / 2;
+
+      const startCenterY =
+        pinchStartMidpoint.current.y -
+        rect.top -
+        rect.height / 2;
+
+      const zoomRatio =
+        newZoom /
+        pinchStartZoom.current;
+
+      // Preserve the point underneath
+      // the fingers while zooming.
+      const newX =
+        centerX -
+        (startCenterX -
+          pinchStartPosition.current.x) *
+          zoomRatio;
+
+      const newY =
+        centerY -
+        (startCenterY -
+          pinchStartPosition.current.y) *
+          zoomRatio;
+
+      setPosition(
+        clampPosition(
+          newX,
+          newY,
+          newZoom
+        )
+      );
+
+      setZoom(newZoom);
+
+      return;
+    }
+
+    // --------------------------------
+    // ONE FINGER PAN
+    // --------------------------------
+    if (
+      pointers.current.size !== 1 ||
+      !dragging.current ||
+      zoom <= 1
+    ) {
       return;
     }
 
@@ -203,6 +458,10 @@ export default function Sky() {
   const handlePointerUp = (
     event: PointerEvent
   ) => {
+    pointers.current.delete(
+      event.pointerId
+    );
+
     dragging.current = false;
 
     try {
@@ -211,6 +470,30 @@ export default function Sky() {
       );
     } catch {
       // Pointer capture already released.
+    }
+
+    // If one finger remains after
+    // pinch, prepare it for dragging.
+    if (
+      pointers.current.size === 1 &&
+      zoom > 1
+    ) {
+      const remaining =
+        Array.from(
+          pointers.current.values()
+        )[0];
+
+      lastPointer.current = {
+        ...remaining,
+      };
+
+      dragging.current = true;
+    }
+
+    if (
+      pointers.current.size < 2
+    ) {
+      pinchStartDistance.current = 0;
     }
   };
 
@@ -221,6 +504,12 @@ export default function Sky() {
       x: 0,
       y: 0,
     });
+
+    pointers.current.clear();
+
+    dragging.current = false;
+
+    pinchStartDistance.current = 0;
   };
 
   useEffect(() => {
@@ -234,7 +523,9 @@ export default function Sky() {
     container.addEventListener(
       "wheel",
       handleWheel,
-      { passive: false }
+      {
+        passive: false,
+      }
     );
 
     container.addEventListener(
@@ -283,7 +574,7 @@ export default function Sky() {
         handlePointerUp
       );
     };
-  }, [zoom]);
+  }, [zoom, position]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -319,8 +610,12 @@ export default function Sky() {
         height: "100vh",
         overflow: "hidden",
         background: "#050505",
+
+        // Critical for mobile pinch
         touchAction: "none",
+
         userSelect: "none",
+        WebkitUserSelect: "none",
       }}
     >
       {/* SKY IMAGE */}
@@ -335,6 +630,7 @@ export default function Sky() {
           width: "100%",
           height: "100%",
           objectFit: "contain",
+
           transform: `
             translate(
               calc(-50% + ${position.x}px),
@@ -342,10 +638,13 @@ export default function Sky() {
             )
             scale(${zoom})
           `,
+
           transformOrigin:
             "center center",
+
           pointerEvents: "none",
           userSelect: "none",
+          WebkitUserSelect: "none",
         }}
       />
 
@@ -353,8 +652,10 @@ export default function Sky() {
       <div
         style={{
           position: "absolute",
-          width: "clamp(220px, 35vw, 400px)",
-          height: "clamp(220px, 35vw, 400px)",
+          width:
+            "clamp(220px, 35vw, 400px)",
+          height:
+            "clamp(220px, 35vw, 400px)",
           borderRadius: "50%",
           border:
             "1px solid rgba(255,255,255,0.08)",
@@ -368,15 +669,22 @@ export default function Sky() {
       <div
         style={{
           position: "absolute",
-          top: "clamp(18px, 4vw, 30px)",
-          left: "clamp(18px, 4vw, 30px)",
+          top:
+            "clamp(18px, 4vw, 30px)",
+          left:
+            "clamp(18px, 4vw, 30px)",
           zIndex: 10,
+
           maxWidth:
             "min(520px, calc(100vw - 36px))",
+
           color: "#fff",
+
           textShadow:
             "0 2px 15px rgba(0,0,0,0.9)",
+
           pointerEvents: "none",
+          userSelect: "none",
         }}
       >
         <p
@@ -384,8 +692,10 @@ export default function Sky() {
             margin: "0 0 8px",
             fontSize: 11,
             letterSpacing: "3px",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.65)",
+            textTransform:
+              "uppercase",
+            color:
+              "rgba(255,255,255,0.65)",
           }}
         >
           A moment in the stars
@@ -412,7 +722,8 @@ export default function Sky() {
             marginTop: 9,
             fontSize:
               "clamp(13px, 2.5vw, 16px)",
-            color: "rgba(255,255,255,0.75)",
+            color:
+              "rgba(255,255,255,0.75)",
           }}
         >
           1 January 2004 · Madhya Pradesh
@@ -423,21 +734,32 @@ export default function Sky() {
       <div
         style={{
           position: "absolute",
-          right: "clamp(12px, 3vw, 24px)",
-          bottom: "clamp(12px, 3vw, 24px)",
+          right:
+            "clamp(12px, 3vw, 24px)",
+          bottom:
+            "clamp(12px, 3vw, 24px)",
+
           zIndex: 10,
+
           display: "flex",
           alignItems: "center",
           gap: 7,
           padding: 8,
+
           borderRadius: 14,
+
           background:
             "rgba(10,10,10,0.58)",
-          backdropFilter: "blur(14px)",
+
+          backdropFilter:
+            "blur(14px)",
+
           WebkitBackdropFilter:
             "blur(14px)",
+
           border:
             "1px solid rgba(255,255,255,0.1)",
+
           boxShadow:
             "0 15px 40px rgba(0,0,0,0.3)",
         }}
@@ -532,7 +854,7 @@ export default function Sky() {
             whiteSpace: "nowrap",
           }}
         >
-          Drag to explore
+          Pinch to zoom · Drag to explore
         </div>
       )}
     </div>
@@ -542,18 +864,30 @@ export default function Sky() {
 const buttonStyle: React.CSSProperties = {
   minWidth: 36,
   minHeight: 36,
-  border: "1px solid rgba(255,255,255,0.15)",
+
+  border:
+    "1px solid rgba(255,255,255,0.15)",
+
   borderRadius: 9,
+
   padding: "7px 10px",
+
   background:
     "rgba(255,255,255,0.1)",
+
   color: "#fff",
+
   fontSize: 18,
   fontWeight: 400,
+
   cursor: "pointer",
+
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
+
   WebkitTapHighlightColor:
     "transparent",
+
+  touchAction: "manipulation",
 };
