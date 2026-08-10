@@ -7,6 +7,9 @@ import Question2 from "./pages/questions2";
 import Question3 from "./pages/questions3";
 import Remind from "./pages/remind";
 import Answer from "./pages/answer";
+import Proud from "./pages/proud";
+import Answer2 from "./pages/answer2";
+import Stars from "./pages/stars";
 
 function App() {
   return (
@@ -19,6 +22,9 @@ function App() {
         <Route path="/questions3" element={<Question3 />} />
         <Route path="/remind" element={<Remind />} />     
         <Route path="/answer" element={<Answer />} />   
+        <Route path="/answer2" element={<Answer2 />} />
+        <Route path="/proud" element={<Proud />} /> 
+        <Route path="/stars" element={<Stars />} />
       </Routes>
     </BrowserRouter>
   );

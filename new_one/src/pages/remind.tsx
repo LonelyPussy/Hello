@@ -1,6 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Remind() {
+  const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -10,7 +13,8 @@ export default function Remind() {
         color: "#151515",
         fontFamily:
           "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        padding: "clamp(45px, 7vw, 70px) clamp(18px, 8vw, 8vw) 100px",
+        padding:
+          "clamp(45px, 7vw, 70px) clamp(18px, 8vw, 8vw) 100px",
         boxSizing: "border-box",
         overflowX: "hidden",
       }}
@@ -340,6 +344,31 @@ export default function Remind() {
             </div>
           </div>
         </section>
+
+        {/* NEXT */}
+        <section
+          style={{
+            marginTop: 20,
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              width: 45,
+              height: 1,
+              background: "#aaa",
+              margin: "0 auto 30px",
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={() => navigate("/answer2")}
+            style={nextButtonStyle}
+          >
+            hn, net
+          </button>
+        </section>
       </main>
     </div>
   );
@@ -483,4 +512,21 @@ const arrowStyle: React.CSSProperties = {
   fontSize: 25,
   color: "#888",
   marginTop: 3,
+};
+
+/* -----------------------------
+   NEXT BUTTON
+----------------------------- */
+
+const nextButtonStyle: React.CSSProperties = {
+  padding: "13px 30px",
+  border: "1px solid #151515",
+  borderRadius: 12,
+  background: "#151515",
+  color: "#fff",
+  fontSize: 15,
+  fontWeight: 500,
+  letterSpacing: "0.3px",
+  cursor: "pointer",
+  transition: "all 0.2s ease",
 };
