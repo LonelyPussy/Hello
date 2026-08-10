@@ -366,7 +366,7 @@ export default function Remind() {
             onClick={() => navigate("/answer2")}
             style={nextButtonStyle}
           >
-            hn, net
+            hn, next
           </button>
         </section>
       </main>
