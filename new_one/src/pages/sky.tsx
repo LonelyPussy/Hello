@@ -31,29 +31,38 @@ export default function Sky() {
     y: number,
     scale: number
   ) => {
-    const container = containerRef.current;
+    const container =
+      containerRef.current;
 
     if (!container) {
       return { x: 0, y: 0 };
     }
 
-    const width = container.clientWidth;
-    const height = container.clientHeight;
+    const width =
+      container.clientWidth;
+
+    const height =
+      container.clientHeight;
 
     const imageRatio = 16 / 9;
 
     const containerRatio =
-      width / Math.max(height, 1);
+      width /
+      Math.max(height, 1);
 
     let imageWidth: number;
     let imageHeight: number;
 
-    if (containerRatio > imageRatio) {
+    if (
+      containerRatio > imageRatio
+    ) {
       imageHeight = height;
-      imageWidth = height * imageRatio;
+      imageWidth =
+        height * imageRatio;
     } else {
       imageWidth = width;
-      imageHeight = width / imageRatio;
+      imageHeight =
+        width / imageRatio;
     }
 
     imageWidth *= scale;
@@ -88,7 +97,10 @@ export default function Sky() {
   ) => {
     const newZoom = Math.max(
       MIN_ZOOM,
-      Math.min(MAX_ZOOM, nextZoom)
+      Math.min(
+        MAX_ZOOM,
+        nextZoom
+      )
     );
 
     setPosition((current) => {
@@ -117,11 +129,16 @@ export default function Sky() {
           rect.top -
           rect.height / 2;
 
-        const ratio = newZoom / zoom;
+        const ratio =
+          newZoom / zoom;
 
         return clampPosition(
-          x - (x - current.x) * ratio,
-          y - (y - current.y) * ratio,
+          x -
+            (x - current.x) *
+              ratio,
+          y -
+            (y - current.y) *
+              ratio,
           newZoom
         );
       }
@@ -142,10 +159,14 @@ export default function Sky() {
     event.preventDefault();
 
     const direction =
-      event.deltaY > 0 ? -1 : 1;
+      event.deltaY > 0
+        ? -1
+        : 1;
 
     changeZoom(
-      zoom + direction * ZOOM_STEP,
+      zoom +
+        direction *
+          ZOOM_STEP,
       event.clientX,
       event.clientY
     );
@@ -340,12 +361,37 @@ export default function Sky() {
             )
             scale(${zoom})
           `,
-          transformOrigin: "center center",
+          transformOrigin:
+            "center center",
           pointerEvents: "none",
           userSelect: "none",
         }}
       />
 
+      {/* DATE + LOCATION */}
+      <div
+        style={{
+          position: "absolute",
+          top: 24,
+          left: 24,
+          zIndex: 10,
+          color: "#fff",
+          fontSize: 18,
+          fontWeight: 500,
+          fontFamily:
+            "Arial, sans-serif",
+          letterSpacing: "0.3px",
+          textShadow:
+            "0 2px 10px rgba(0, 0, 0, 0.9)",
+          pointerEvents: "none",
+          userSelect: "none",
+        }}
+      >
+        <div>The night sky from the day you were born</div>
+        <div>1 January 2004 · Madhya Pradesh</div>
+      </div>
+
+      {/* ZOOM CONTROLS */}
       <div
         style={{
           position: "absolute",
@@ -356,15 +402,21 @@ export default function Sky() {
           gap: 8,
           padding: "8px 10px",
           borderRadius: 12,
-          background: "rgba(0, 0, 0, 0.55)",
-          backdropFilter: "blur(10px)",
+          background:
+            "rgba(0, 0, 0, 0.55)",
+          backdropFilter:
+            "blur(10px)",
         }}
       >
         <button
           onClick={() =>
-            changeZoom(zoom - ZOOM_STEP)
+            changeZoom(
+              zoom - ZOOM_STEP
+            )
           }
-          disabled={zoom <= MIN_ZOOM}
+          disabled={
+            zoom <= MIN_ZOOM
+          }
           style={buttonStyle}
         >
           −
@@ -378,14 +430,21 @@ export default function Sky() {
             fontSize: 14,
           }}
         >
-          {Math.round(zoom * 100)}%
+          {Math.round(
+            zoom * 100
+          )}
+          %
         </span>
 
         <button
           onClick={() =>
-            changeZoom(zoom + ZOOM_STEP)
+            changeZoom(
+              zoom + ZOOM_STEP
+            )
           }
-          disabled={zoom >= MAX_ZOOM}
+          disabled={
+            zoom >= MAX_ZOOM
+          }
           style={buttonStyle}
         >
           +
@@ -402,12 +461,14 @@ export default function Sky() {
   );
 }
 
-const buttonStyle: React.CSSProperties = {
-  border: "none",
-  borderRadius: 8,
-  padding: "6px 10px",
-  background: "rgba(255, 255, 255, 0.12)",
-  color: "#fff",
-  fontSize: 18,
-  cursor: "pointer",
-};
+const buttonStyle: React.CSSProperties =
+  {
+    border: "none",
+    borderRadius: 8,
+    padding: "6px 10px",
+    background:
+      "rgba(255, 255, 255, 0.12)",
+    color: "#fff",
+    fontSize: 18,
+    cursor: "pointer",
+  };
