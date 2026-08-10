@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 export default function Home() {
+  const navigate = useNavigate();
+
   return (
     <div
       style={{
@@ -15,7 +19,7 @@ export default function Home() {
         position: "relative",
       }}
     >
-      {/* Decorative circles */}
+      {/* Decorative circle — top right */}
       <div
         style={{
           position: "absolute",
@@ -28,6 +32,7 @@ export default function Home() {
         }}
       />
 
+      {/* Decorative circle — bottom left */}
       <div
         style={{
           position: "absolute",
@@ -47,6 +52,7 @@ export default function Home() {
           padding: 30,
         }}
       >
+        {/* Small heading */}
         <p
           style={{
             margin: "0 0 20px",
@@ -59,6 +65,7 @@ export default function Home() {
           A little something for you
         </p>
 
+        {/* Main heading */}
         <h1
           style={{
             margin: 0,
@@ -70,6 +77,7 @@ export default function Home() {
         >
           Welcome,
           <br />
+
           <span
             style={{
               fontFamily: "Georgia, serif",
@@ -81,18 +89,20 @@ export default function Home() {
           </span>
         </h1>
 
+        {/* Divider */}
         <div
           style={{
             width: 50,
             height: 1,
             background: "#111",
-            margin: "35px auto 0",
+            margin: "35px auto 25px",
           }}
         />
 
+        {/* Subtitle */}
         <p
           style={{
-            margin: "25px 0 0",
+            margin: "0 0 20px",
             fontSize: 14,
             color: "#777",
             letterSpacing: "0.5px",
@@ -100,6 +110,39 @@ export default function Home() {
         >
           Yes, this is all about you.
         </p>
+
+        {/* Hau button */}
+        <button
+          onClick={() => navigate("/questions")}
+          style={{
+            padding: "14px 38px",
+            border: "1px solid #222",
+            borderRadius: 12,
+            background: "transparent",
+            color: "#111",
+            fontSize: 15,
+            fontWeight: 500,
+            letterSpacing: "0.5px",
+            cursor: "pointer",
+            transition:
+              "background 0.25s ease, color 0.25s ease, transform 0.25s ease",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "#111";
+            e.currentTarget.style.color = "#fff";
+            e.currentTarget.style.transform =
+              "translateY(-2px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background =
+              "transparent";
+            e.currentTarget.style.color = "#111";
+            e.currentTarget.style.transform =
+              "translateY(0)";
+          }}
+        >
+          Hau
+        </button>
       </main>
     </div>
   );

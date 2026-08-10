@@ -8,17 +8,19 @@ export default function Question() {
   const moveNoButton = () => {
     const button = noButtonRef.current;
 
-    if (!button) {
-      return;
-    }
+    if (!button) return;
 
     const padding = 20;
 
-    const maxX =
-      window.innerWidth - button.offsetWidth - padding;
+    const maxX = Math.max(
+      padding,
+      window.innerWidth - button.offsetWidth - padding
+    );
 
-    const maxY =
-      window.innerHeight - button.offsetHeight - padding;
+    const maxY = Math.max(
+      padding,
+      window.innerHeight - button.offsetHeight - padding
+    );
 
     const x =
       padding +
@@ -31,6 +33,7 @@ export default function Question() {
     button.style.position = "fixed";
     button.style.left = `${x}px`;
     button.style.top = `${y}px`;
+    button.style.zIndex = "100";
   };
 
   return (
@@ -40,30 +43,86 @@ export default function Question() {
         inset: 0,
         width: "100vw",
         height: "100vh",
+        background: "#f7f5f2",
+        color: "#111",
+        fontFamily:
+          "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        overflow: "hidden",
+        userSelect: "none",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: "#fff",
-        color: "#000",
-        fontFamily: "Arial, sans-serif",
-        overflow: "hidden",
-        userSelect: "none",
+        padding: "24px",
+        boxSizing: "border-box",
       }}
     >
       <div
         style={{
+          position: "absolute",
+          width: 320,
+          height: 320,
+          borderRadius: "50%",
+          border: "1px solid rgba(0,0,0,0.06)",
+          top: -150,
+          right: -100,
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          width: 420,
+          height: 420,
+          borderRadius: "50%",
+          border: "1px solid rgba(0,0,0,0.05)",
+          bottom: -250,
+          left: -180,
+          pointerEvents: "none",
+        }}
+      />
+
+      <main
+        style={{
+          position: "relative",
+          width: "100%",
+          maxWidth: 700,
           textAlign: "center",
         }}
       >
-        <h1
+        <p
           style={{
-            fontSize: 36,
-            marginBottom: 30,
-            fontWeight: 600,
-            color: "#000",
+            margin: "0 0 18px",
+            fontSize: 12,
+            letterSpacing: "3px",
+            textTransform: "uppercase",
+            color: "#999",
           }}
         >
-          Are you Intelligent and Cracked?
+          Question 01
+        </p>
+
+        <h1
+          style={{
+            margin: "0 auto 38px",
+            maxWidth: 650,
+            fontSize: "clamp(34px, 7vw, 58px)",
+            lineHeight: 1.08,
+            fontWeight: 500,
+            letterSpacing: "-2px",
+          }}
+        >
+          Are you{" "}
+          <span
+            style={{
+              fontFamily: "Georgia, serif",
+              fontStyle: "italic",
+              fontWeight: 400,
+            }}
+          >
+            Intelligent
+          </span>{" "}
+          and Cracked?
         </h1>
 
         <div
@@ -71,12 +130,23 @@ export default function Question() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            gap: 20,
+            gap: 14,
+            minHeight: 55,
           }}
         >
           <button
             onClick={() => navigate("/questions2")}
             style={buttonStyle}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#111";
+              e.currentTarget.style.color = "#fff";
+              e.currentTarget.style.transform = "translateY(-2px)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "transparent";
+              e.currentTarget.style.color = "#111";
+              e.currentTarget.style.transform = "translateY(0)";
+            }}
           >
             Yes
           </button>
@@ -85,23 +155,28 @@ export default function Question() {
             ref={noButtonRef}
             onMouseEnter={moveNoButton}
             onPointerEnter={moveNoButton}
+            onTouchStart={moveNoButton}
             style={buttonStyle}
           >
             No
           </button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
 const buttonStyle: React.CSSProperties = {
-  border: "2px solid #000",
-  borderRadius: 10,
-  padding: "12px 28px",
-  fontSize: 18,
+  minWidth: 105,
+  padding: "13px 28px",
+  border: "1px solid #222",
+  borderRadius: 12,
+  background: "transparent",
+  color: "#111",
+  fontSize: 15,
   fontWeight: 500,
+  letterSpacing: "0.5px",
   cursor: "pointer",
-  background: "#fff",
-  color: "#000",
+  transition:
+    "background 0.25s ease, color 0.25s ease, transform 0.25s ease",
 };
