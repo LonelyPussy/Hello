@@ -25,7 +25,7 @@ export default function Question3() {
       return;
     }
 
-    navigate("/question4");
+    navigate("/answer");
   };
 
   const handleNoPointerDown = (
